@@ -1,4 +1,5 @@
-PayPal Transaction Analysis & Dashboard
+PayPal Transaction Analysis & Dashboard:
+
 This project is a complete data analytics pipeline that demonstrates the process of generating, loading, analyzing, and visualizing transaction data. It includes Python scripts for data processing, SQL for analysis, and an interactive HTML dashboard for presenting the final insights.
 
 Project Files
