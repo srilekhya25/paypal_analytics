@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Analytics Dashboard</title>
+    <!-- Use Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Chart.js for creating interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Use SQL.js to run SQLite queries in the browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .chart-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .chart-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-8">PayPal Transaction Analytics Dashboard</h1>
+        
+        <!-- Dashboard cards with charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Card for Transactions by Country -->
+            <div class="chart-card">
+                <h2 class="text-xl font-bold text-gray-700 mb-4 text-center">Transactions by Country</h2>
+                <canvas id="countryChart"></canvas>
+            </div>
+
+            <!-- Card for Transactions by Payment Method -->
+            <div class="chart-card">
+                <h2 class="text-xl font-bold text-gray-700 mb-4 text-center">Transactions by Payment Method</h2>
+                <canvas id="methodChart"></canvas>
+            </div>
+
+            <!-- Card for Transactions by Status -->
+            <div class="chart-card">
+                <h2 class="text-xl font-bold text-gray-700 mb-4 text-center">Transactions by Status</h2>
+                <canvas id="statusChart"></canvas>
+            </div>
+
+            <!-- Card for Total Amount by Country -->
+            <div class="chart-card md:col-span-2 lg:col-span-1">
+                <h2 class="text-xl font-bold text-gray-700 mb-4 text-center">Total Amount by Country</h2>
+                <canvas id="totalAmountChart"></canvas>
+            </div>
+            
+            <!-- Card for Average Amount by Country -->
+            <div class="chart-card md:col-span-2 lg:col-span-2">
+                <h2 class="text-xl font-bold text-gray-700 mb-4 text-center">Average Amount by Country</h2>
+                <canvas id="avgAmountChart"></canvas>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Use an async function to handle the database loading
+        async function initDashboard() {
+            // NOTE: The original code expected a local file, which won't work in this environment.
+            // This new approach embeds the database data directly into the HTML file as a Uint8Array.
+
+            // Define the database schema and sample data as SQL statements
+            const sqlStatements = `
+                CREATE TABLE transactions (
+                    id INTEGER PRIMARY KEY,
+                    country TEXT,
+                    payment_method TEXT,
+                    status TEXT,
+                    transaction_amount REAL
+                );
+                INSERT INTO transactions (country, payment_method, status, transaction_amount) VALUES
+                ('USA', 'PayPal Balance', 'Completed', 50.25),
+                ('UK', 'Credit Card', 'Completed', 120.50),
+                ('Canada', 'Debit Card', 'Pending', 75.00),
+                ('Australia', 'Credit Card', 'Completed', 200.00),
+                ('USA', 'PayPal Balance', 'Completed', 30.00),
+                ('Germany', 'Credit Card', 'Refunded', 95.75),
+                ('UK', 'Debit Card', 'Completed', 65.00),
+                ('USA', 'Credit Card', 'Completed', 150.00),
+                ('Canada', 'Credit Card', 'Completed', 88.40),
+                ('USA', 'Debit Card', 'Pending', 45.10);
+            `;
+
+            // Load the SQL.js library, and crucially, tell it where to find the wasm file.
+            const SQL = await initSqlJs({
+                locateFile: filename => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${filename}`
+            });
+            
+            // Create an in-memory database and execute the SQL statements
+            const db = new SQL.Database();
+            db.exec(sqlStatements);
+
+            // Define the queries to fetch data for charts
+            const queries = {
+                country: "SELECT country, COUNT(*) as count FROM transactions GROUP BY country;",
+                method: "SELECT payment_method, COUNT(*) as count FROM transactions GROUP BY payment_method;",
+                status: "SELECT status, COUNT(*) as count FROM transactions GROUP BY status;",
+                totalAmount: "SELECT country, SUM(transaction_amount) as total_amount FROM transactions GROUP BY country;",
+                avgAmount: "SELECT country, AVG(transaction_amount) as avg_amount FROM transactions GROUP BY country;"
+            };
+            
+            // --- Helper function to run a query and get chart data ---
+            function getChartData(query) {
+                const result = db.exec(query);
+                if (result.length === 0) return { labels: [], data: [] };
+                
+                const values = result[0].values;
+                
+                const labels = values.map(row => row[0]);
+                const data = values.map(row => row[1]);
+                
+                return { labels, data };
+            }
+            
+            // --- Charting functions for each canvas ---
+            function createChart(canvasId, title, data, type = 'bar', color = '#3b82f6') {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                new Chart(ctx, {
+                    type: type,
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: title,
+                            data: data.data,
+                            backgroundColor: color,
+                            borderColor: color,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Execute queries and render charts
+            const countryData = getChartData(queries.country);
+            createChart('countryChart', 'Transactions by Country', countryData, 'bar', '#4f46e5');
+
+            const methodData = getChartData(queries.method);
+            createChart('methodChart', 'Transactions by Payment Method', methodData, 'bar', '#06b6d4');
+            
+            const statusData = getChartData(queries.status);
+            createChart('statusChart', 'Transactions by Status', statusData, 'doughnut', ['#ef4444', '#f97316', '#eab308', '#22c55e']);
+
+            const totalAmountData = getChartData(queries.totalAmount);
+            createChart('totalAmountChart', 'Total Amount by Country', totalAmountData, 'bar', '#8b5cf6');
+
+            const avgAmountData = getChartData(queries.avgAmount);
+            createChart('avgAmountChart', 'Average Amount by Country', avgAmountData, 'bar', '#ec4899');
+
+            // Close the database connection
+            db.close();
+        }
+
+        // Run the dashboard initialization when the window loads
+        window.onload = initDashboard;
+    </script>
+</body>
+</html>

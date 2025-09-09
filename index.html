@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal Transactions Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card {
+            background-color: #1a1a1a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-zinc-900 text-gray-200">
+
+    <div class="p-6 md:p-10 lg:p-12">
+        <!-- Dashboard Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">PayPal Transactions Dashboard</h1>
+            <p class="text-gray-400 text-lg">A project showcase for data analysis and visualization.</p>
+        </header>
+
+        <!-- Key Performance Indicators (KPIs) Section -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+            <!-- KPI Card: Total Transactions -->
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400">Total Transactions</span>
+                    <!-- Icon for Transactions -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12h-8l3.37-6.74A2 2 0 0 0 14 3.46l-4 8.08-3.37-6.74A2 2 0 0 0 2 6l5.7 11.4L10 16l4-8.08 3.37 6.74A2 2 0 0 0 22 18l-5.7-11.4L14 10l-4 8.08z"/>
+                    </svg>
+                </div>
+                <p id="totalTransactions" class="text-3xl md:text-4xl font-semibold mt-2 text-white">---</p>
+            </div>
+
+            <!-- KPI Card: Total Revenue -->
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400">Total Revenue</span>
+                    <!-- Icon for Revenue -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </div>
+                <p id="totalRevenue" class="text-3xl md:text-4xl font-semibold mt-2 text-white">---</p>
+            </div>
+
+            <!-- KPI Card: Average Transaction Value -->
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400">Avg. Transaction Value</span>
+                    <!-- Icon for Average -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </div>
+                <p id="avgTransactionValue" class="text-3xl md:text-4xl font-semibold mt-2 text-white">---</p>
+            </div>
+
+            <!-- KPI Card: Growth Rate -->
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400">Month-over-Month Growth</span>
+                    <!-- Icon for Growth -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 12l-6-6-6 6M12 16v-8"/>
+                    </svg>
+                </div>
+                <p id="growthRate" class="text-3xl md:text-4xl font-semibold mt-2 text-white">---</p>
+            </div>
+
+            <!-- New KPI Card: Total Countries -->
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400">Total Countries</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12A10 10 0 0 1 12 2v20A10 10 0 0 1 22 12z" />
+                        <path d="M12 2a10 10 0 0 0-4 17.5" />
+                        <path d="M2 12h20" />
+                        <path d="M22 12a10 10 0 0 1-10 10v-5a3 3 0 0 1 3-3h3" />
+                        <path d="M12 2a10 10 0 0 1 10 10" />
+                    </svg>
+                </div>
+                <p id="totalCountries" class="text-3xl md:text-4xl font-semibold mt-2 text-white">---</p>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+            <!-- Chart Card: Revenue over Time -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-white mb-4">Revenue over Time</h2>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Chart Card: Transaction Volume by Category -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-white mb-4">Transaction Volume by Category</h2>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- New Chart Card: Transactions by Payment Method -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-white mb-4">Transactions by Payment Method</h2>
+                <div class="chart-container">
+                    <canvas id="paymentMethodChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Chart Card: Transaction Status Distribution -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-white mb-4">Transaction Status Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Transactions Table -->
+        <section class="card overflow-x-auto">
+            <h2 class="text-xl font-semibold text-white mb-4">Recent Transactions</h2>
+            <table class="min-w-full divide-y divide-zinc-700">
+                <thead class="bg-zinc-800">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Transaction ID</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Country</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Payment Method</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionTableBody" class="divide-y divide-zinc-700">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </section>
+
+    </div>
+
+    <!-- JavaScript for Data and Charts -->
+    <script>
+        // NOTE: Your SQL queries use 'paypal_transactions' but your CREATE TABLE statement uses 'transactions'.
+        // For a real-world project, it's critical to standardize on a single table name.
+        // I will use mock data here to reflect the results of your queries.
+        const mockData = {
+            kpis: {
+                totalTransactions: 1000000,
+                totalRevenue: 9876543.21,
+                avgTransactionValue: 98.77,
+                growthRate: "22.5%",
+                totalCountries: 6 // based on your Python script
+            },
+            revenueOverTime: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                data: [450000, 500000, 620000, 750000, 800000, 780000, 850000, 920000, 1000000, 1100000, 1250000, 1300000]
+            },
+            transactionByCategory: {
+                labels: ['E-commerce', 'Services', 'Subscriptions', 'Donations'],
+                data: [450000, 300000, 150000, 100000]
+            },
+            transactionStatus: {
+                labels: ['Success', 'Failed', 'Refund', 'Fraud_Suspected'],
+                data: [850000, 100000, 30000, 20000]
+            },
+            transactionsByPaymentMethod: {
+                labels: ['Card', 'PayPal', 'Bank', 'Crypto'],
+                data: [400000, 350000, 200000, 50000]
+            },
+            recentTransactions: [
+                { id: 'TXN87654321', date: '2023-10-27', amount: 89.99, country: 'US', payment_method: 'Card', status: 'Success' },
+                { id: 'TXN87654322', date: '2023-10-26', amount: 25.50, country: 'IN', payment_method: 'PayPal', status: 'Success' },
+                { id: 'TXN87654323', date: '2023-10-26', amount: 150.00, country: 'UK', payment_method: 'Bank', status: 'Failed' },
+                { id: 'TXN87654324', date: '2023-10-25', amount: 12.00, country: 'DE', payment_method: 'Crypto', status: 'Fraud_Suspected' },
+                { id: 'TXN87654325', date: '2023-10-25', amount: 30.75, country: 'US', payment_method: 'Card', status: 'Success' },
+            ]
+        };
+
+        // Function to render all dashboard elements
+        function renderDashboard() {
+            // Populate KPI cards
+            document.getElementById('totalTransactions').innerText = mockData.kpis.totalTransactions.toLocaleString();
+            document.getElementById('totalRevenue').innerText = `$${mockData.kpis.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('avgTransactionValue').innerText = `$${mockData.kpis.avgTransactionValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('growthRate').innerText = mockData.kpis.growthRate;
+            document.getElementById('totalCountries').innerText = mockData.kpis.totalCountries;
+
+            // Chart.js configuration for Revenue over Time
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: mockData.revenueOverTime.labels,
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: mockData.revenueOverTime.data,
+                        backgroundColor: 'rgba(129, 140, 248, 0.2)',
+                        borderColor: '#818cf8',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(113, 113, 122, 0.3)' },
+                            ticks: { color: '#a1a1aa' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#a1a1aa' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#a1a1aa' }
+                        }
+                    }
+                }
+            });
+
+            // Chart.js configuration for Transaction Volume by Category
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: mockData.transactionByCategory.labels,
+                    datasets: [{
+                        label: 'Transaction Volume',
+                        data: mockData.transactionByCategory.data,
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(113, 113, 122, 0.3)' },
+                            ticks: { color: '#a1a1aa' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#a1a1aa' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // New chart configuration for Transactions by Payment Method
+            const paymentMethodCtx = document.getElementById('paymentMethodChart').getContext('2d');
+            new Chart(paymentMethodCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: mockData.transactionsByPaymentMethod.labels,
+                    datasets: [{
+                        data: mockData.transactionsByPaymentMethod.data,
+                        backgroundColor: ['#7c3aed', '#10b981', '#fcd34d', '#be185d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#a1a1aa' }
+                        }
+                    }
+                }
+            });
+
+            // Chart.js configuration for Transaction Status Distribution
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: mockData.transactionStatus.labels,
+                    datasets: [{
+                        data: mockData.transactionStatus.data,
+                        backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#eab308']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#a1a1aa' }
+                        }
+                    }
+                }
+            });
+            
+            // Populate Recent Transactions table
+            const tableBody = document.getElementById('transactionTableBody');
+            tableBody.innerHTML = ''; // Clear existing rows
+            mockData.recentTransactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 font-mono">${transaction.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${transaction.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">$${transaction.amount.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${transaction.country}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${transaction.payment_method}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                        ${transaction.status === 'Success' ? 'bg-green-100 text-green-800' :
+                          transaction.status === 'Failed' ? 'bg-red-100 text-red-800' :
+                          transaction.status === 'Refund' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-purple-100 text-purple-800'}">
+                            ${transaction.status}
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Call the render function once the DOM is loaded
+        window.onload = renderDashboard;
+
+    </script>
+</body>
+</html>
