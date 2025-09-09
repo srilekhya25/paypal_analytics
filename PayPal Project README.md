@@ -50,3 +50,10 @@ Step 4: Generate the Static Dashboard Image
 Run this script to create the paypal_analytics_dashboard.png image file.
 
 python generate_dashboard.py
+
+Step 5: View the Interactive Dashboards
+This is the final, visual part of the project. Simply open either of the following HTML files in your web browser to see the interactive charts:
+
+dashboard.html: The simpler, single-file interactive dashboard.
+
+index.html: The more advanced, production-ready dashboard.
